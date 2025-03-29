@@ -11,6 +11,7 @@ is a report that discusses the methodology of infotaxis and possible application
 
 Below is a simple summary of the math showing how infotaxis works. 
 
+---
 ### Belief Representation
 At each timestep \( t \), the agent maintains a **belief distribution** over possible source locations:
 
@@ -18,7 +19,7 @@ $$
 P_t(x_s, y_s)
 $$
 
----
+
 
 ### Bayesian Belief Update
 After observing a signal \( Z_t \in \{0, 1\} \) (signal or no signal), the belief is updated using Bayes' rule:
