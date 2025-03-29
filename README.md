@@ -1,17 +1,71 @@
 # Infotaxis Search and Performance Benchmark
 
-This project implements and visualizes **Infotaxis**, a biologically inspired strategy for localizing an unknown signal-emitting source (here we use the example of a gas leak) using information theory. Attached in this file
+This project implements and visualizes **Infotaxis**, a biologically inspired strategy for localizing an unknown signal-emitting source (here we use the example of a gas leak) using information theory. Infotaxis is an information-theoretic search strategy designed to locate a hidden source (e.g., odor, gas, or radiation) in environments where signals are sparse, noisy, or intermittent. It models the problem as a Partially Observable Markov Decision Process (POMDP) and balances exploration (gathering information) and exploitation (moving toward likely source locations) using the expected reduction in Shannon entropy.Attached in this file
 is a report that discusses the methodology of infotaxis and possible applications of them, as well as a simple code example illustrating how infotaxis works. 
-Evaluates **Infotaxis** performance across 1D to 4D search problems.
-- Models the source-tracking problem as a **Partially Observable Markov Decision Process (POMDP)**.
-- Shows that Infotaxis is:
-    - Robust
-    - Near-optimal in many scenarios
-    - Simple to implement
+ 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/c9bdf184-c837-437b-8e17-568aa012d18e" alt="Odor Leak Simulation" width="400"/>
 </p>
-<p align="center"><sub><i>Figure: Simulated odor leak scenario where the searcher navigates a 2D grid to localize the source based on intermittent sensor signals.</i></sub></p>
+<p align="center"><sub><i>Figure 1. Simulated odor leak scenario where the searcher navigates a 2D grid to localize the source based on intermittent sensor signals.</i></sub></p>
+
+
+Below is a simple summary of the math showing how infotaxis works. 
+
+### Belief Representation
+At each timestep \( t \), the agent maintains a **belief distribution** over possible source locations:
+
+$$
+P_t(x_s, y_s)
+$$
+
+---
+
+### Bayesian Belief Update
+After observing a signal \( Z_t \in \{0, 1\} \) (signal or no signal), the belief is updated using Bayes' rule:
+
+$$
+P_{t+1}(x_s, y_s) = \frac{P(Z_t \mid x_t, y_t, x_s, y_s) \cdot P_t(x_s, y_s)}{\sum_{x', y'} P(Z_t \mid x_t, y_t, x', y') \cdot P_t(x', y')}
+$$
+
+Where:
+- \( (x_t, y_t) \): current position of the searcher.
+- \( (x_s, y_s) \): hypothesized source location.
+
+The likelihood (sensor model) is often modeled as exponential decay with distance:
+
+$$
+P(Z_t = 1 \mid x_t, y_t, x_s, y_s) = \exp\left(-\frac{d(x_t, y_t, x_s, y_s)}{\lambda}\right)
+$$
+
+
+### 📉 Entropy Computation
+The Shannon entropy of the belief distribution is:
+
+$$
+S(P_t) = -\sum_{x_s, y_s} P_t(x_s, y_s) \log P_t(x_s, y_s)
+$$
+
+Entropy measures uncertainty: lower entropy means higher confidence in the source location.
+
+### Action Selection: Maximizing Information Gain
+For each possible move \( a \), infotaxis evaluates the expected entropy **after** making that move:
+
+$$
+\mathbb{E}[S(P_{t+1}) \mid a] = \sum_{Z_t \in \{0, 1\}} P(Z_t \mid a) \cdot S(P_{t+1} \mid Z_t, a)
+$$
+
+The agent selects the move that maximizes expected **entropy reduction**:
+
+$$
+a^* = \arg\max_a \left[ S(P_t) - \mathbb{E}[S(P_{t+1}) \mid a] \right]
+$$
+
+---
+
+###  Markovian Process
+Infotaxis operates as a **first-order Markov process**:
+- The next state (belief) depends only on the current state and observation.
+- No history beyond \( P_t \) is required.
 
 - Finds that DRL can **learn better policies than infotaxis**, especially in 2D environments.
 - In higher dimensions, the gap between Infotaxis and DRL closes.
